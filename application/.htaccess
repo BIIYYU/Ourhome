@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /DapurKita/
+
+    # Jika file/folder ada, langsung akses
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Semua request lain masuk ke index.php
+    RewriteRule ^(.*)$ index.php/$1 [L]
+</IfModule>

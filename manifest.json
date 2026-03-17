@@ -1,0 +1,24 @@
+{
+    "name": "MealPlan Rumah",
+    "short_name": "MealPlan",
+    "description": "Atur menu makan mingguan keluarga dengan mudah dan hemat",
+    "start_url": "./index.php/dashboard",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#f5f5f4",
+    "theme_color": "#e85d26",
+    "icons": [
+        {
+            "src": "assets/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "assets/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

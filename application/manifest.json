@@ -1,0 +1,24 @@
+{
+    "name": "Our Home",
+    "short_name": "Our Home",
+    "description": "Kelola keuangan & menu makan keluarga",
+    "start_url": "./index.php/laporan",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#fff5f7",
+    "theme_color": "#e8608c",
+    "icons": [
+        {
+            "src": "assets/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "assets/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
