@@ -1,18 +1,22 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class M_mealplan extends CI_Model {
+class M_mealplan extends CI_Model
+{
 
     // ── USER & SETTINGS ──────────────────────────────
-    public function get_user($id_user) {
+    public function get_user($id_user)
+    {
         return $this->db->get_where('users', ['id_user' => $id_user])->row();
     }
 
-    public function get_settings($id_user) {
+    public function get_settings($id_user)
+    {
         return $this->db->get_where('user_settings', ['id_user' => $id_user])->row();
     }
 
-    public function save_settings($id_user, $data) {
+    public function save_settings($id_user, $data)
+    {
         $exists = $this->get_settings($id_user);
         $data['updated_at'] = date('Y-m-d H:i:s');
         if ($exists) {
@@ -26,7 +30,8 @@ class M_mealplan extends CI_Model {
     }
 
     // ── DASHBOARD SUMMARY ────────────────────────────
-    public function get_budget_minggu_ini($id_user) {
+    public function get_budget_minggu_ini($id_user)
+    {
         $minggu = date('W');
         $tahun  = date('Y');
         $row = $this->db->get_where('budget_minggu', [
@@ -59,7 +64,8 @@ class M_mealplan extends CI_Model {
     /**
      * Get budget for any week (offset from current week)
      */
-    public function get_budget_by_offset($id_user, $week_offset = 0) {
+    public function get_budget_by_offset($id_user, $week_offset = 0)
+    {
         $base = strtotime('monday this week');
         $senin = date('Y-m-d', strtotime("{$week_offset} weeks", $base));
         $minggu_end = date('Y-m-d', strtotime("{$week_offset} weeks +6 days", $base));
@@ -100,14 +106,16 @@ class M_mealplan extends CI_Model {
     /**
      * Update budget amount
      */
-    public function update_budget_amount($id_budget, $id_user, $amount) {
+    public function update_budget_amount($id_budget, $id_user, $amount)
+    {
         $this->db->where(['id_budget' => $id_budget, 'id_user' => $id_user])
-                  ->update('budget_minggu', ['budget_amount' => $amount]);
+            ->update('budget_minggu', ['budget_amount' => $amount]);
     }
 
     // ── BUDGET BULANAN ────────────────────────────────
 
-    public function get_budget_bulanan($id_user, $bulan, $tahun) {
+    public function get_budget_bulanan($id_user, $bulan, $tahun)
+    {
         $row = $this->db->get_where('budget_bulanan', [
             'id_user' => $id_user, 'bulan' => $bulan, 'tahun' => $tahun
         ])->row();
@@ -124,15 +132,17 @@ class M_mealplan extends CI_Model {
         return $row;
     }
 
-    public function update_budget_bulanan($id_user, $bulan, $tahun, $data) {
+    public function update_budget_bulanan($id_user, $bulan, $tahun, $data)
+    {
         $this->db->where(['id_user' => $id_user, 'bulan' => $bulan, 'tahun' => $tahun])
-                  ->update('budget_bulanan', $data);
+            ->update('budget_bulanan', $data);
     }
 
     /**
      * Get belanja items by month (not by budget_minggu)
      */
-    public function get_daftar_belanja_bulan($id_user, $bulan, $tahun) {
+    public function get_daftar_belanja_bulan($id_user, $bulan, $tahun)
+    {
         $tgl_awal  = sprintf('%04d-%02d-01', $tahun, $bulan);
         $tgl_akhir = date('Y-m-t', strtotime($tgl_awal));
         $this->db->where('id_user', $id_user);
@@ -142,7 +152,8 @@ class M_mealplan extends CI_Model {
         return $this->db->get('daftar_belanja')->result();
     }
 
-    public function get_total_pengeluaran_minggu($id_user, $id_budget) {
+    public function get_total_pengeluaran_minggu($id_user, $id_budget)
+    {
         $this->db->select_sum('harga');
         $this->db->where(['id_user' => $id_user, 'id_budget' => $id_budget]);
         $row = $this->db->get('pengeluaran')->row();
@@ -152,7 +163,8 @@ class M_mealplan extends CI_Model {
     /**
      * Total estimasi harga dari jadwal menu (resep yang dipilih) dalam 1 minggu
      */
-    public function get_total_estimasi_menu($id_user, $tanggal_mulai, $tanggal_selesai) {
+    public function get_total_estimasi_menu($id_user, $tanggal_mulai, $tanggal_selesai)
+    {
         $sql = "SELECT COALESCE(SUM(r.estimasi_harga), 0) as total
                 FROM jadwal_menu j
                 LEFT JOIN resep r ON r.id_resep = j.id_resep
@@ -161,7 +173,8 @@ class M_mealplan extends CI_Model {
         return $row ? (float)$row->total : 0;
     }
 
-    public function get_pengeluaran_by_kategori($id_user, $id_budget) {
+    public function get_pengeluaran_by_kategori($id_user, $id_budget)
+    {
         $this->db->select('kategori, SUM(harga) as total');
         $this->db->where(['id_user' => $id_user, 'id_budget' => $id_budget]);
         $this->db->group_by('kategori');
@@ -170,7 +183,8 @@ class M_mealplan extends CI_Model {
     }
 
     // ── RESEP ────────────────────────────────────────
-    public function get_all_resep($id_user = null) {
+    public function get_all_resep($id_user = null)
+    {
         $this->db->select('r.*, k.nama_kategori, k.icon');
         $this->db->from('resep r');
         $this->db->join('kategori_menu k', 'k.id_kategori = r.id_kategori', 'left');
@@ -179,7 +193,8 @@ class M_mealplan extends CI_Model {
         return $this->db->get()->result();
     }
 
-    public function get_resep_by_kategori($id_kategori, $id_user = null) {
+    public function get_resep_by_kategori($id_kategori, $id_user = null)
+    {
         $this->db->select('r.*, k.nama_kategori, k.icon');
         $this->db->from('resep r');
         $this->db->join('kategori_menu k', 'k.id_kategori = r.id_kategori', 'left');
@@ -188,7 +203,8 @@ class M_mealplan extends CI_Model {
         return $this->db->get()->result();
     }
 
-    public function get_resep_detail($id_resep) {
+    public function get_resep_detail($id_resep)
+    {
         $resep = $this->db->select('r.*, k.nama_kategori, k.icon')
             ->from('resep r')
             ->join('kategori_menu k', 'k.id_kategori = r.id_kategori', 'left')
@@ -201,11 +217,13 @@ class M_mealplan extends CI_Model {
         return $resep;
     }
 
-    public function get_kategori_menu() {
+    public function get_kategori_menu()
+    {
         return $this->db->order_by('urutan')->get('kategori_menu')->result();
     }
 
-    public function simpan_resep($data, $bahan_list) {
+    public function simpan_resep($data, $bahan_list)
+    {
         $this->db->insert('resep', $data);
         $id_resep = $this->db->insert_id();
         foreach ($bahan_list as $i => $b) {
@@ -216,7 +234,8 @@ class M_mealplan extends CI_Model {
         return $id_resep;
     }
 
-    public function update_resep($id_resep, $data, $bahan_list) {
+    public function update_resep($id_resep, $data, $bahan_list)
+    {
         $this->db->where('id_resep', $id_resep)->update('resep', $data);
 
         // Delete old bahan, insert new
@@ -229,13 +248,15 @@ class M_mealplan extends CI_Model {
         return true;
     }
 
-    public function hapus_resep($id_resep, $id_user) {
+    public function hapus_resep($id_resep, $id_user)
+    {
         // Hanya hapus resep milik user (bukan system)
         $this->db->where(['id_resep' => $id_resep, 'id_user' => $id_user])->delete('resep');
     }
 
     // ── JADWAL MENU ──────────────────────────────────
-    public function get_jadwal_minggu($id_user, $tanggal_mulai, $tanggal_selesai) {
+    public function get_jadwal_minggu($id_user, $tanggal_mulai, $tanggal_selesai)
+    {
         $sql = "SELECT j.*, r.nama_resep, r.estimasi_harga, r.waktu_masak, k.icon
                 FROM jadwal_menu j
                 LEFT JOIN resep r ON r.id_resep = j.id_resep
@@ -251,18 +272,21 @@ class M_mealplan extends CI_Model {
         return $this->db->query($sql, [$id_user, $tanggal_mulai, $tanggal_selesai])->result();
     }
 
-    public function simpan_jadwal($data) {
+    public function simpan_jadwal($data)
+    {
         // Always INSERT — support multiple lauk per waktu makan
         $data['created_at'] = date('Y-m-d H:i:s');
         $this->db->insert('jadwal_menu', $data);
         return $this->db->insert_id();
     }
 
-    public function hapus_jadwal($id_jadwal, $id_user) {
+    public function hapus_jadwal($id_jadwal, $id_user)
+    {
         $this->db->where(['id_jadwal' => $id_jadwal, 'id_user' => $id_user])->delete('jadwal_menu');
     }
 
-    public function copy_jadwal_minggu_lalu($id_user) {
+    public function copy_jadwal_minggu_lalu($id_user)
+    {
         $senin_lalu = date('Y-m-d', strtotime('monday last week'));
         $minggu_lalu = date('Y-m-d', strtotime('sunday last week'));
         $senin_ini = date('Y-m-d', strtotime('monday this week'));
@@ -285,7 +309,8 @@ class M_mealplan extends CI_Model {
     }
 
     // ── DAFTAR BELANJA ───────────────────────────────
-    public function generate_daftar_belanja($id_user, $id_budget, $tanggal_mulai, $tanggal_selesai) {
+    public function generate_daftar_belanja($id_user, $id_budget, $tanggal_mulai, $tanggal_selesai)
+    {
         // Hapus belanja lama untuk budget ini
         $this->db->where(['id_user' => $id_user, 'id_budget' => $id_budget])->delete('daftar_belanja');
 
@@ -320,13 +345,15 @@ class M_mealplan extends CI_Model {
         return count($bahan_aggregate);
     }
 
-    public function get_daftar_belanja($id_user, $id_budget) {
+    public function get_daftar_belanja($id_user, $id_budget)
+    {
         return $this->db->where(['id_user' => $id_user, 'id_budget' => $id_budget])
             ->order_by('is_checked, nama_item')
             ->get('daftar_belanja')->result();
     }
 
-    public function toggle_belanja($id_belanja, $id_user) {
+    public function toggle_belanja($id_belanja, $id_user)
+    {
         $row = $this->db->get_where('daftar_belanja', ['id_belanja' => $id_belanja, 'id_user' => $id_user])->row();
         if ($row) {
             $this->db->where('id_belanja', $id_belanja)
@@ -335,24 +362,28 @@ class M_mealplan extends CI_Model {
     }
 
     // ── PENGELUARAN ──────────────────────────────────
-    public function get_pengeluaran_list($id_user, $id_budget) {
+    public function get_pengeluaran_list($id_user, $id_budget)
+    {
         return $this->db->where(['id_user' => $id_user, 'id_budget' => $id_budget])
             ->order_by('tanggal DESC, id_pengeluaran DESC')
             ->get('pengeluaran')->result();
     }
 
-    public function simpan_pengeluaran($data) {
+    public function simpan_pengeluaran($data)
+    {
         $this->db->insert('pengeluaran', $data);
         return $this->db->insert_id();
     }
 
-    public function hapus_pengeluaran($id_pengeluaran, $id_user) {
+    public function hapus_pengeluaran($id_pengeluaran, $id_user)
+    {
         $this->db->where(['id_pengeluaran' => $id_pengeluaran, 'id_user' => $id_user])
             ->delete('pengeluaran');
     }
 
     // ── LAPORAN ──────────────────────────────────────
-    public function get_laporan_mingguan($id_user, $limit = 8) {
+    public function get_laporan_mingguan($id_user, $limit = 8)
+    {
         $this->db->select('b.*, COALESCE(SUM(p.harga), 0) as total_belanja');
         $this->db->from('budget_minggu b');
         $this->db->join('pengeluaran p', 'p.id_budget = b.id_budget AND p.id_user = b.id_user', 'left');
@@ -366,7 +397,8 @@ class M_mealplan extends CI_Model {
     /**
      * Laporan mingguan filtered by bulan & tahun
      */
-    public function get_laporan_by_bulan($id_user, $bulan, $tahun) {
+    public function get_laporan_by_bulan($id_user, $bulan, $tahun)
+    {
         $sql = "SELECT b.*, COALESCE(SUM(p.harga), 0) as total_belanja
                 FROM budget_minggu b
                 LEFT JOIN pengeluaran p ON p.id_budget = b.id_budget AND p.id_user = b.id_user
@@ -381,7 +413,8 @@ class M_mealplan extends CI_Model {
     /**
      * Ringkasan bulanan: total budget, total belanja, per kategori
      */
-    public function get_ringkasan_bulanan($id_user, $bulan, $tahun) {
+    public function get_ringkasan_bulanan($id_user, $bulan, $tahun)
+    {
         $tgl_awal  = sprintf('%04d-%02d-01', $tahun, $bulan);
         $tgl_akhir = date('Y-m-t', strtotime($tgl_awal));
 
@@ -426,7 +459,8 @@ class M_mealplan extends CI_Model {
     /**
      * Daftar bulan yang ada datanya
      */
-    public function get_bulan_tersedia($id_user) {
+    public function get_bulan_tersedia($id_user)
+    {
         $sql = "SELECT DISTINCT YEAR(tanggal) as tahun,
                        MONTH(tanggal) as bulan
                 FROM pengeluaran WHERE id_user = ?
@@ -438,7 +472,8 @@ class M_mealplan extends CI_Model {
     }
 
     // ── FAVORIT ──────────────────────────────────────
-    public function toggle_favorit($id_user, $id_resep) {
+    public function toggle_favorit($id_user, $id_resep)
+    {
         $exists = $this->db->get_where('menu_favorit', [
             'id_user' => $id_user, 'id_resep' => $id_resep
         ])->row();
@@ -451,42 +486,49 @@ class M_mealplan extends CI_Model {
         }
     }
 
-    public function get_favorit_ids($id_user) {
+    public function get_favorit_ids($id_user)
+    {
         $rows = $this->db->select('id_resep')->where('id_user', $id_user)->get('menu_favorit')->result();
         return array_column($rows, 'id_resep');
     }
 
     // ── MASTER HARGA ─────────────────────────────────
-    public function get_all_harga($id_user, $kategori = null) {
+    public function get_all_harga($id_user, $kategori = null)
+    {
         $this->db->where('id_user', $id_user);
         if ($kategori) $this->db->where('kategori_bahan', $kategori);
         $this->db->order_by('kategori_bahan, nama_bahan');
         return $this->db->get('master_harga')->result();
     }
 
-    public function get_harga_by_id($id_harga) {
+    public function get_harga_by_id($id_harga)
+    {
         return $this->db->get_where('master_harga', ['id_harga' => $id_harga])->row();
     }
 
-    public function simpan_harga($data) {
+    public function simpan_harga($data)
+    {
         $data['created_at'] = date('Y-m-d H:i:s');
         $data['updated_at'] = date('Y-m-d H:i:s');
         $this->db->insert('master_harga', $data);
         return $this->db->insert_id();
     }
 
-    public function update_harga($id_harga, $id_user, $data) {
+    public function update_harga($id_harga, $id_user, $data)
+    {
         $data['updated_at'] = date('Y-m-d H:i:s');
         $this->db->where(['id_harga' => $id_harga, 'id_user' => $id_user])
             ->update('master_harga', $data);
     }
 
-    public function hapus_harga($id_harga, $id_user) {
+    public function hapus_harga($id_harga, $id_user)
+    {
         $this->db->where(['id_harga' => $id_harga, 'id_user' => $id_user])
             ->delete('master_harga');
     }
 
-    public function get_kategori_bahan($id_user) {
+    public function get_kategori_bahan($id_user)
+    {
         $this->db->select('kategori_bahan, COUNT(*) as total');
         $this->db->where('id_user', $id_user);
         $this->db->where('kategori_bahan IS NOT NULL');
@@ -498,7 +540,8 @@ class M_mealplan extends CI_Model {
     /**
      * Cari harga dari master berdasarkan nama bahan (untuk auto-fill di form resep)
      */
-    public function cari_harga_bahan($id_user, $keyword) {
+    public function cari_harga_bahan($id_user, $keyword)
+    {
         $this->db->like('LOWER(nama_bahan)', strtolower($keyword));
         $this->db->where('id_user', $id_user);
         $this->db->order_by('nama_bahan');
@@ -508,33 +551,39 @@ class M_mealplan extends CI_Model {
 
     // ── PEMASUKAN BULANAN ─────────────────────────────
 
-    public function get_pemasukan_bulan($id_user, $bulan, $tahun) {
+    public function get_pemasukan_bulan($id_user, $bulan, $tahun)
+    {
         $this->db->where(['id_user' => $id_user, 'bulan' => $bulan, 'tahun' => $tahun]);
         $this->db->order_by('tanggal ASC, id_pemasukan ASC');
         return $this->db->get('pemasukan')->result();
     }
 
-    public function get_total_pemasukan_bulan($id_user, $bulan, $tahun) {
+    public function get_total_pemasukan_bulan($id_user, $bulan, $tahun)
+    {
         $this->db->select_sum('jumlah');
         $this->db->where(['id_user' => $id_user, 'bulan' => $bulan, 'tahun' => $tahun]);
         $row = $this->db->get('pemasukan')->row();
         return $row ? (float)$row->jumlah : 0;
     }
 
-    public function simpan_pemasukan($data) {
+    public function simpan_pemasukan($data)
+    {
         $this->db->insert('pemasukan', $data);
         return $this->db->insert_id();
     }
 
-    public function update_pemasukan($id, $id_user, $data) {
+    public function update_pemasukan($id, $id_user, $data)
+    {
         $this->db->where(['id_pemasukan' => $id, 'id_user' => $id_user])->update('pemasukan', $data);
     }
 
-    public function hapus_pemasukan($id, $id_user) {
+    public function hapus_pemasukan($id, $id_user)
+    {
         $this->db->where(['id_pemasukan' => $id, 'id_user' => $id_user])->delete('pemasukan');
     }
 
-    public function get_ringkasan_saldo_bulanan($id_user, $bulan, $tahun) {
+    public function get_ringkasan_saldo_bulanan($id_user, $bulan, $tahun)
+    {
         $tgl_awal  = sprintf('%04d-%02d-01', $tahun, $bulan);
         $tgl_akhir = date('Y-m-t', strtotime($tgl_awal));
 
@@ -549,8 +598,8 @@ class M_mealplan extends CI_Model {
 
         // Total belanja (dari tabel daftar_belanja, yang sudah dibeli)
         $sql_belanja = "SELECT COALESCE(SUM(estimasi_harga), 0) as total FROM daftar_belanja
-                        WHERE id_user = ? AND is_checked = 1
-                        AND created_at >= ? AND created_at <= CONCAT(?, ' 23:59:59')";
+                WHERE id_user = ?
+                AND created_at >= ? AND created_at <= CONCAT(?, ' 23:59:59')";
         $belanja = $this->db->query($sql_belanja, [$id_user, $tgl_awal, $tgl_akhir])->row();
         $total_belanja = (float)($belanja->total ?? 0);
 
@@ -590,7 +639,8 @@ class M_mealplan extends CI_Model {
 
     // ── PENGELUARAN LAIN ──────────────────────────────
 
-    public function get_pengeluaran_lain_bulan($id_user, $bulan, $tahun) {
+    public function get_pengeluaran_lain_bulan($id_user, $bulan, $tahun)
+    {
         $tgl_awal  = sprintf('%04d-%02d-01', $tahun, $bulan);
         $tgl_akhir = date('Y-m-t', strtotime($tgl_awal));
         $this->db->where('id_user', $id_user);
@@ -600,12 +650,14 @@ class M_mealplan extends CI_Model {
         return $this->db->get('pengeluaran_lain')->result();
     }
 
-    public function simpan_pengeluaran_lain($data) {
+    public function simpan_pengeluaran_lain($data)
+    {
         $this->db->insert('pengeluaran_lain', $data);
         return $this->db->insert_id();
     }
 
-    public function hapus_pengeluaran_lain($id, $id_user) {
+    public function hapus_pengeluaran_lain($id, $id_user)
+    {
         $this->db->where(['id_pengeluaran_lain' => $id, 'id_user' => $id_user])->delete('pengeluaran_lain');
     }
 
@@ -613,7 +665,8 @@ class M_mealplan extends CI_Model {
     // FITUR 1: HOME RINGKASAN - Tren 3 bulan
     // ══════════════════════════════════════════════════
 
-    public function get_tren_3bulan($id_user) {
+    public function get_tren_3bulan($id_user)
+    {
         $result = [];
         for ($i = 2; $i >= 0; $i--) {
             $dt = strtotime("-{$i} months");
@@ -626,7 +679,7 @@ class M_mealplan extends CI_Model {
             $dapur = $this->db->query("SELECT COALESCE(SUM(p.harga),0) as total FROM pengeluaran p JOIN budget_minggu b ON p.id_budget=b.id_budget WHERE p.id_user=? AND p.tanggal>=? AND p.tanggal<=?", [$id_user, $tgl_awal, $tgl_akhir])->row()->total;
 
             // Belanja
-            $belanja = $this->db->query("SELECT COALESCE(SUM(estimasi_harga),0) as total FROM daftar_belanja WHERE id_user=? AND created_at>=? AND created_at<=?", [$id_user, $tgl_awal, $tgl_akhir.' 23:59:59'])->row()->total;
+            $belanja = $this->db->query("SELECT COALESCE(SUM(estimasi_harga),0) as total FROM daftar_belanja WHERE id_user=? AND created_at>=? AND created_at<=?", [$id_user, $tgl_awal, $tgl_akhir . ' 23:59:59'])->row()->total;
 
             // Pengeluaran lain
             $lain = $this->db->query("SELECT COALESCE(SUM(jumlah),0) as total FROM pengeluaran_lain WHERE id_user=? AND tanggal>=? AND tanggal<=?", [$id_user, $tgl_awal, $tgl_akhir])->row()->total;
@@ -644,7 +697,8 @@ class M_mealplan extends CI_Model {
         return $result;
     }
 
-    public function get_budget_alerts($id_user) {
+    public function get_budget_alerts($id_user)
+    {
         $alerts = [];
         // Budget dapur minggu ini
         $budget = $this->get_budget_minggu_ini($id_user);
@@ -654,16 +708,17 @@ class M_mealplan extends CI_Model {
             if ($pct >= 80) $alerts[] = (object)['type' => 'dapur', 'pct' => round($pct), 'msg' => 'Budget dapur minggu ini sudah ' . round($pct) . '% terpakai!'];
         }
         // Budget belanja bulan ini
-        $bln = (int)date('m'); $thn = (int)date('Y');
+        $bln = (int)date('m');
+        $thn = (int)date('Y');
         $bb = $this->get_budget_bulanan($id_user, $bln, $thn);
         if ($bb) {
             $items = $this->get_daftar_belanja_bulan($id_user, $bln, $thn);
-            $total_bel = array_sum(array_map(fn($i) => (float)$i->estimasi_harga, $items));
+            $total_bel = array_sum(array_map(fn ($i) => (float)$i->estimasi_harga, $items));
             $pct_bel = (float)$bb->budget_belanja > 0 ? ($total_bel / (float)$bb->budget_belanja * 100) : 0;
             if ($pct_bel >= 80) $alerts[] = (object)['type' => 'belanja', 'pct' => round($pct_bel), 'msg' => 'Budget belanja bulan ini sudah ' . round($pct_bel) . '% terpakai!'];
 
             $pl = $this->get_pengeluaran_lain_bulan($id_user, $bln, $thn);
-            $total_lain = array_sum(array_map(fn($p) => (float)$p->jumlah, $pl));
+            $total_lain = array_sum(array_map(fn ($p) => (float)$p->jumlah, $pl));
             $pct_lain = (float)$bb->budget_lainnya > 0 ? ($total_lain / (float)$bb->budget_lainnya * 100) : 0;
             if ($pct_lain >= 80) $alerts[] = (object)['type' => 'lain', 'pct' => round($pct_lain), 'msg' => 'Budget pengeluaran lain sudah ' . round($pct_lain) . '% terpakai!'];
         }
@@ -674,27 +729,32 @@ class M_mealplan extends CI_Model {
     // FITUR 2: Auto-Generate Pengeluaran Rutin
     // ══════════════════════════════════════════════════
 
-    public function auto_generate_rutin($id_user, $bulan, $tahun) {
+    public function auto_generate_rutin($id_user, $bulan, $tahun)
+    {
         // Get last month's rutin items
-        $pm = $bulan - 1; $py = $tahun;
-        if ($pm < 1) { $pm = 12; $py--; }
+        $pm = $bulan - 1;
+        $py = $tahun;
+        if ($pm < 1) {
+            $pm = 12;
+            $py--;
+        }
 
         $rutin_items = $this->db->where([
             'id_user' => $id_user, 'is_rutin' => 1,
         ])->where('MONTH(tanggal)', $pm)->where('YEAR(tanggal)', $py)
-          ->get('pengeluaran_lain')->result();
+            ->get('pengeluaran_lain')->result();
 
         // Check if already generated this month
         $existing = $this->db->where([
             'id_user' => $id_user, 'is_rutin' => 1,
         ])->where('MONTH(tanggal)', $bulan)->where('YEAR(tanggal)', $tahun)
-          ->count_all_results('pengeluaran_lain');
+            ->count_all_results('pengeluaran_lain');
 
         if ($existing > 0 || empty($rutin_items)) return 0;
 
         $count = 0;
         foreach ($rutin_items as $item) {
-            $tgl_baru = sprintf('%04d-%02d-%02d', $tahun, $bulan, min((int)date('d', strtotime($item->tanggal)), (int)date('t', mktime(0,0,0,$bulan,1,$tahun))));
+            $tgl_baru = sprintf('%04d-%02d-%02d', $tahun, $bulan, min((int)date('d', strtotime($item->tanggal)), (int)date('t', mktime(0, 0, 0, $bulan, 1, $tahun))));
             $this->db->insert('pengeluaran_lain', [
                 'id_user'  => $id_user,
                 'nama'     => $item->nama,
@@ -713,13 +773,15 @@ class M_mealplan extends CI_Model {
     // FITUR 4: Catatan Minggu
     // ══════════════════════════════════════════════════
 
-    public function get_catatan_minggu($id_user, $minggu_ke, $tahun) {
+    public function get_catatan_minggu($id_user, $minggu_ke, $tahun)
+    {
         return $this->db->get_where('catatan_minggu', [
             'id_user' => $id_user, 'minggu_ke' => $minggu_ke, 'tahun' => $tahun
         ])->row();
     }
 
-    public function save_catatan_minggu($id_user, $minggu_ke, $tahun, $catatan) {
+    public function save_catatan_minggu($id_user, $minggu_ke, $tahun, $catatan)
+    {
         $existing = $this->get_catatan_minggu($id_user, $minggu_ke, $tahun);
         if ($existing) {
             $this->db->where('id', $existing->id)->update('catatan_minggu', ['catatan' => $catatan]);
@@ -734,15 +796,18 @@ class M_mealplan extends CI_Model {
     // FITUR 5: Template Belanja
     // ══════════════════════════════════════════════════
 
-    public function get_templates($id_user) {
+    public function get_templates($id_user)
+    {
         return $this->db->where('id_user', $id_user)->order_by('created_at DESC')->get('template_belanja')->result();
     }
 
-    public function get_template_items($id_template) {
+    public function get_template_items($id_template)
+    {
         return $this->db->where('id_template', $id_template)->get('template_belanja_item')->result();
     }
 
-    public function save_template($id_user, $nama, $items) {
+    public function save_template($id_user, $nama, $items)
+    {
         $this->db->insert('template_belanja', ['id_user' => $id_user, 'nama_template' => $nama]);
         $id_tpl = $this->db->insert_id();
         foreach ($items as $item) {
@@ -752,7 +817,8 @@ class M_mealplan extends CI_Model {
         return $id_tpl;
     }
 
-    public function apply_template($id_user, $id_template) {
+    public function apply_template($id_user, $id_template)
+    {
         $items = $this->get_template_items($id_template);
         $count = 0;
         foreach ($items as $it) {
@@ -769,7 +835,8 @@ class M_mealplan extends CI_Model {
         return $count;
     }
 
-    public function delete_template($id_template, $id_user) {
+    public function delete_template($id_template, $id_user)
+    {
         $tpl = $this->db->get_where('template_belanja', ['id' => $id_template, 'id_user' => $id_user])->row();
         if (!$tpl) return;
         $this->db->where('id_template', $id_template)->delete('template_belanja_item');
@@ -780,11 +847,13 @@ class M_mealplan extends CI_Model {
     // FITUR 7: Target Tabungan
     // ══════════════════════════════════════════════════
 
-    public function get_tabungan($id_user) {
+    public function get_tabungan($id_user)
+    {
         return $this->db->where(['id_user' => $id_user, 'is_active' => 1])->order_by('created_at DESC')->get('target_tabungan')->result();
     }
 
-    public function get_total_sisa_bulanan($id_user) {
+    public function get_total_sisa_bulanan($id_user)
+    {
         // Sum of (pemasukan - total pengeluaran) per month, for all months with data
         $rows = $this->db->query("
             SELECT p.bulan, p.tahun, p.jumlah as pemasukan
@@ -811,14 +880,16 @@ class M_mealplan extends CI_Model {
         return $total_sisa;
     }
 
-    public function save_tabungan($id_user, $nama, $target) {
+    public function save_tabungan($id_user, $nama, $target)
+    {
         $this->db->insert('target_tabungan', [
             'id_user' => $id_user, 'nama_target' => $nama, 'target_amount' => $target,
         ]);
         return $this->db->insert_id();
     }
 
-    public function delete_tabungan($id, $id_user) {
+    public function delete_tabungan($id, $id_user)
+    {
         $this->db->where(['id' => $id, 'id_user' => $id_user])->update('target_tabungan', ['is_active' => 0]);
     }
 }
